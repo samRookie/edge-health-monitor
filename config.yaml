@@ -1,0 +1,99 @@
+# Edge Health Monitor Configuration
+
+project:
+  name: "Edge Health Monitor"
+  version: "1.0.0"
+  random_seed: 42
+
+paths:
+  data_dir: "data"
+  models_dir: "models"
+  results_dir: "results"
+  docs_dir: "docs"
+  logs_dir: "logs"
+
+har:
+  url: "https://archive.ics.uci.edu/static/public/240/human+activity+recognition+using+smartphones.zip"
+  fallback_urls:
+    - "https://raw.githubusercontent.com/jgb/UCI-HAR-Dataset/master/UCI%20HAR%20Dataset.zip"
+  sample_rate_hz: 50
+  window_samples: 128          # 2.56 seconds
+  overlap_samples: 64         # 50% overlap
+  num_channels: 6             # total_acc_x/y/z, body_gyro_x/y/z
+  classes:
+    - "WALKING"
+    - "WALKING_UPSTAIRS"
+    - "WALKING_DOWNSTAIRS"
+    - "SITTING"
+    - "STANDING"
+    - "LAYING"
+  val_subjects: [27, 28, 29, 30]
+
+kws:
+  url: "http://download.tensorflow.org/data/speech_commands_v0.02.tar.gz"
+  sample_rate_hz: 16000
+  clip_duration_s: 1.0
+  target_words:
+    - "yes"
+    - "no"
+    - "stop"
+    - "go"
+    - "up"
+    - "down"
+  emergency_keyword: "stop"   # Configurable emergency keyword
+  all_classes:
+    - "yes"
+    - "no"
+    - "stop"
+    - "go"
+    - "up"
+    - "down"
+    - "unknown"
+    - "silence"
+  mfcc:
+    num_mel_bins: 40
+    num_mfcc: 40
+    frame_length_ms: 25.0
+    frame_step_ms: 10.0
+    fft_length: 512
+  sample_cap_train: 2000      # per class cap for training set
+  quick_sample_cap_train: 500 # for rapid testing
+
+training:
+  har_epochs: 25
+  kws_epochs: 25
+  quick_epochs: 10
+  har_batch_size: 64
+  kws_batch_size: 64
+  learning_rate: 0.002
+  patience: 6
+
+compression:
+  pruning_target_sparsities: [0.50, 0.80]
+  pruning_epochs: 6
+  distillation_temperature: 3.0
+  distillation_alpha: 0.3
+
+federated:
+  num_clients: 10
+  num_rounds: 15
+  local_epochs: 2
+  batch_size: 32
+
+adversarial:
+  epsilons: [0.0, 0.02, 0.05, 0.10, 0.20]
+  snr_levels_db: [20, 10, 5, 0]
+
+alerts:
+  mode: "both"                # "fall_rule", "keyword_plus_activity", or "both"
+  fall_accel_threshold_g: 2.5
+  stillness_variance_threshold: 0.05
+  posture_confidence_threshold: 0.70
+  keyword_confidence_threshold: 0.80
+  inactivity_seconds_threshold: 5.0
+  cooldown_seconds: 5.0
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  http_only: false            # true if --http flag passed

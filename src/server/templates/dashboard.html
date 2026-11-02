@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard, Edge Health Monitor</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/css/tokens.css">
+  <link rel="stylesheet" href="/static/css/layout.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Left Navigation (220px fixed) -->
+    <nav class="sidebar" aria-label="Main navigation">
+      <div class="sidebar-header">
+        <div class="project-title">Edge Health Monitor</div>
+        <div class="project-subtitle">TinyML Healthcare System</div>
+      </div>
+      <ul class="nav-list" id="nav-list">
+        <li class="nav-item active"><a href="#dashboard" class="nav-link" data-page="dashboard"><span class="nav-step">1.</span><span class="nav-label">Dashboard</span></a></li>
+        <li class="nav-item"><a href="#data" class="nav-link" data-page="data"><span class="nav-step">2.</span><span class="nav-label">Data</span></a></li>
+        <li class="nav-item"><a href="#impulse" class="nav-link" data-page="impulse"><span class="nav-step">3.</span><span class="nav-label">Impulse design</span></a></li>
+        <li class="nav-item"><a href="#features" class="nav-link" data-page="features"><span class="nav-step">4.</span><span class="nav-label">Features</span></a></li>
+        <li class="nav-item"><a href="#classifier-activity" class="nav-link" data-page="classifier-activity"><span class="nav-step">5.</span><span class="nav-label">Classifier: activity</span></a></li>
+        <li class="nav-item"><a href="#classifier-keyword" class="nav-link" data-page="classifier-keyword"><span class="nav-step">6.</span><span class="nav-label">Classifier: keyword</span></a></li>
+        <li class="nav-item"><a href="#compression" class="nav-link" data-page="compression"><span class="nav-step">7.</span><span class="nav-label">Compression</span></a></li>
+        <li class="nav-item"><a href="#federated" class="nav-link" data-page="federated"><span class="nav-step">8.</span><span class="nav-label">Federated learning</span></a></li>
+        <li class="nav-item"><a href="#robustness" class="nav-link" data-page="robustness"><span class="nav-step">9.</span><span class="nav-label">Robustness</span></a></li>
+        <li class="nav-item"><a href="#live" class="nav-link" data-page="live"><span class="nav-step">10.</span><span class="nav-label">Live classification</span></a></li>
+        <li class="nav-item"><a href="#model-testing" class="nav-link" data-page="model-testing"><span class="nav-step">11.</span><span class="nav-label">Model testing</span></a></li>
+        <li class="nav-item"><a href="#deployment" class="nav-link" data-page="deployment"><span class="nav-step">12.</span><span class="nav-label">Deployment</span></a></li>
+        <li class="nav-item"><a href="#privacy" class="nav-link" data-page="privacy"><span class="nav-step">13.</span><span class="nav-label">Data and privacy</span></a></li>
+        <li class="nav-item"><a href="#notice" class="nav-link" data-page="notice"><span class="nav-step">14.</span><span class="nav-label">Notice</span></a></li>
+      </ul>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+      <header class="top-header">
+        <div class="top-header-title" id="page-header-title">Dashboard</div>
+        <div class="top-header-status">
+          <div>LAN: <span id="lan-ip-display">{{ lan_ip }}</span>:{{ port }}</div>
+          <div class="status-pill"><span class="status-dot ok"></span>System ready</div>
+        </div>
+      </header>
+
+      <main class="content-container">
+        <!-- 1. DASHBOARD -->
+        <section id="page-dashboard" class="page-section">
+          <div class="page-header">
+            <h1 class="page-title">Project dashboard</h1>
+            <p class="page-description">Edge Health Monitor pipeline summary and component states.</p>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Project summary</h2>
+            </div>
+            <table class="data-table" id="events-table">
+              <tbody>
+                <tr><td>Project name</td><td class="mono">Edge Health Monitor</td></tr>
+                <tr><td>Target device architecture</td><td>ARM Cortex-M4 (256 KB RAM, 1024 KB Flash) <span class="tag">analytic target</span></td></tr>
+                <tr><td>Sensors</td><td>6-axis IMU (total acceleration and angular velocity) at 50 Hz, Microphone at 16 kHz</td></tr>
+                <tr><td>Datasets</td><td>UCI HAR (Inertial Signals) and Google Speech Commands v0.02</td></tr>
+                <tr><td>Deployed runtime</td><td>TensorFlow Lite Micro INT8 integer pipeline</td></tr>
+                <tr><td>Primary alert rules</td><td>Dual engine: acceleration impact heuristic with posture confirmation, keyword spotting</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Pipeline status</h2>
+            </div>
+            <table class="data-table" id="events-table">
+              <thead>
+                <tr>
+                  <th>Stage</th>
+                  <th>Component</th>
+                  <th>Status</th>
+                  <th>Artifact</th>
+                </tr>
+              </thead>
+              <tbody id="pipeline-status-rows">
+                <tr><td>Data ingestion</td><td>UCI HAR raw inertial signals</td><td><span class="status-pill"><span class="status-dot ok"></span>Complete</span></td><td class="mono">data/uci_har/</td></tr>
+                <tr><td>Data ingestion</td><td>Google Speech Commands v0.02</td><td><span class="status-pill"><span class="status-dot ok"></span>Complete</span></td><td class="mono">data/speech_commands/</td></tr>
+                <tr><td>Feature extraction</td><td>IMU normalization and 40-band MFCC</td><td><span class="status-pill"><span class="status-dot ok"></span>Complete</span></td><td class="mono">src/features.py</td></tr>
+                <tr><td>HAR baseline</td><td>1D-CNN (24k parameters)</td><td><span class="status-pill"><span class="status-dot ok"></span>Trained</span></td><td class="mono">models/har_baseline.keras</td></tr>
+                <tr><td>KWS baseline</td><td>DS-CNN (56k parameters)</td><td><span class="status-pill"><span class="status-dot ok"></span>Trained</span></td><td class="mono">models/kws_baseline.keras</td></tr>
+                <tr><td>Quantization</td><td>INT8 full-integer TFLite models</td><td><span class="status-pill"><span class="status-dot ok"></span>Converted</span></td><td class="mono">models/*_int8.tflite</td></tr>
+                <tr><td>Alert engine</td><td>Spike stillness rule and keyword trigger</td><td><span class="status-pill"><span class="status-dot ok"></span>Active</span></td><td class="mono">src/alerts.py</td></tr>
+                <tr><td>Live server</td><td>FastAPI HTTPS and WebSockets</td><td><span class="status-pill"><span class="status-dot ok"></span>Online</span></td><td class="mono">src/server/app.py</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 2. DATA -->
+        <section id="page-data" class="page-section" style="display: none;">
+          <div class="page-header">
+            <h1 class="page-title">Dataset overview</h1>
+            <p class="page-description">Class distributions, split counts, and sample signal inspections.</p>
+          </div>
+
+          <div class="grid-two-column">
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">UCI HAR dataset classes</h2>
+              </div>
+              <table class="data-table" id="events-table">
+                <thead><tr><th>Class</th><th class="num">Train</th><th class="num">Val</th><th class="num">Test</th></tr></thead>
+                <tbody>
+                  <tr><td>WALKING</td><td class="num">997</td><td class="num">229</td><td class="num">496</td></tr>
+                  <tr><td>WALKING_UPSTAIRS</td><td class="num">857</td><td class="num">216</td><td class="num">471</td></tr>
+                  <tr><td>WALKING_DOWNSTAIRS</td><td class="num">786</td><td class="num">200</td><td class="num">420</td></tr>
+                  <tr><td>SITTING</td><td class="num">1022</td><td class="num">264</td><td class="num">491</td></tr>
+                  <tr><td>STANDING</td><td class="num">1091</td><td class="num">283</td><td class="num">532</td></tr>
+                  <tr><td>LAYING</td><td class="num">1114</td><td class="num">293</td><td class="num">537</td></tr>
+                  <tr><td><strong>Total</strong></td><td class="num"><strong>5867</strong></td><td class="num"><strong>1485</strong></td><td class="num"><strong>2947</strong></td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Speech Commands v0.02 classes</h2>
+              </div>
+              <table class="data-table" id="events-table">
+                <thead><tr><th>Word</th><th class="num">Train</th><th class="num">Val</th><th class="num">Test</th></tr></thead>
+                <tbody>
+                  <tr><td>yes</td><td class="num">500</td><td class="num">75</td><td class="num">75</td></tr>
+                  <tr><td>no</td><td class="num">500</td><td class="num">75</td><td class="num">75</td></tr>
+                  <tr><td>stop (emergency)</td><td class="num">500</td><td class="num">75</td><td class="num">75</td></tr>
+                  <tr><td>go</td><td class="num">500</td><td class="num">75</td><td class="num">75</td></tr>
+                  <tr><td>up</td><td class="num">500</td><td class="num">75</td><td class="num">75</td></tr>
+                  <tr><td>down</td><td class="num">500</td><td class="num">75</td><td class="num">75</td></tr>
+                  <tr><td>unknown</td><td class="num">500</td><td class="num">75</td><td class="num">75</td></tr>
+                  <tr><td>silence</td><td class="num">500</td><td class="num">75</td><td class="num">75</td></tr>
+                  <tr><td><strong>Total</strong></td><td class="num"><strong>4000</strong></td><td class="num"><strong>600</strong></td><td class="num"><strong>600</strong></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Signal inspector</h2>
+              <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+                <label for="inspector-select" class="form-label">Sample class:</label>
+                <select id="inspector-select" class="form-select">
+                  <option value="walking">WALKING (6-axis IMU)</option>
+                  <option value="upstairs">WALKING_UPSTAIRS (6-axis IMU)</option>
+                  <option value="sitting">SITTING (6-axis IMU)</option>
+                  <option value="laying">LAYING (6-axis IMU)</option>
+                  <option value="fall">FALL_IMPACT (Impact & Stillness IMU)</option>
+                  <option value="stop">stop (Audio Waveform)</option>
+                </select>
+              </div>
+            </div>
+            <div class="chart-controls-bar">
+              <div class="chart-btn-group">
+                <button class="chart-tool-btn" data-chart="inspector" data-action="zoom-in" title="Zoom in">+</button>
+                <button class="chart-tool-btn" data-chart="inspector" data-action="zoom-out" title="Zoom out">-</button>
+                <button class="chart-tool-btn" data-chart="inspector" data-action="reset" title="Reset zoom">Reset</button>
+              </div>
+              <div class="chart-hint">Scroll mouse wheel to zoom, drag to pan</div>
+              <div class="chart-toolbar">
+                <a class="chart-link" href="/api/results/har_baseline_training_curves.csv" download>Download CSV</a>
+              </div>
+            </div>
+            <div id="inspector-canvas-box" class="chart-box" style="height: 200px;">
+              <canvas id="inspector-canvas"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. IMPULSE DESIGN -->
+        <section id="page-impulse" class="page-section" style="display: none;">
+          <div class="page-header">
+            <h1 class="page-title">Impulse design</h1>
+            <p class="page-description">Data processing pipeline topology for Activity Recognition and Keyword Spotting.</p>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Activity recognition impulse</h2>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center; overflow-x: auto; padding: 12px 0;">
+              <div class="impulse-block" style="border: 1px solid var(--border-color); background: var(--bg-page); padding: 12px; width: 220px;">
+                <div style="font-size: 11px; color: var(--text-secondary);">Input block</div>
+                <div style="font-weight: 600; margin-top: 4px;">Time series data</div>
+                <div style="font-size: 12px; font-family: var(--font-mono); margin-top: 6px;">128 samples, 50 Hz<br>2.56s window, 6 axes</div>
+              </div>
+              <div style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 18px;">&rarr;</div>
+              <div class="impulse-block" style="border: 1px solid var(--border-color); background: var(--bg-page); padding: 12px; width: 220px;">
+                <div style="font-size: 11px; color: var(--text-secondary);">Processing block</div>
+                <div style="font-weight: 600; margin-top: 4px;">Raw inertial signals</div>
+                <div style="font-size: 12px; font-family: var(--font-mono); margin-top: 6px;">total_acc_xyz (g)<br>body_gyro_xyz (rad/s)</div>
+              </div>
+              <div style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 18px;">&rarr;</div>
+              <div class="impulse-block" style="border: 1px solid var(--border-color); background: var(--bg-page); padding: 12px; width: 220px;">
+                <div style="font-size: 11px; color: var(--text-secondary);">Learning block</div>
+                <div style="font-weight: 600; margin-top: 4px;">1D-CNN classifier</div>
+                <div style="font-size: 12px; font-family: var(--font-mono); margin-top: 6px;">Conv1D(32) &rarr; Conv1D(64)<br>16,230 parameters</div>
+              </div>
+              <div style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 18px;">&rarr;</div>
+              <div class="impulse-block" style="border: 1px solid var(--border-color); background: var(--bg-page); padding: 12px; width: 220px;">
+                <div style="font-size: 11px; color: var(--text-secondary);">Output features</div>
+                <div style="font-weight: 600; margin-top: 4px;">6 activity classes</div>
+                <div style="font-size: 12px; font-family: var(--font-mono); margin-top: 6px;">WALKING, SITTING,<br>STANDING, LAYING, etc.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Keyword spotting impulse</h2>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center; overflow-x: auto; padding: 12px 0;">
+              <div class="impulse-block" style="border: 1px solid var(--border-color); background: var(--bg-page); padding: 12px; width: 220px;">
+                <div style="font-size: 11px; color: var(--text-secondary);">Input block</div>
+                <div style="font-weight: 600; margin-top: 4px;">Audio stream</div>
+                <div style="font-size: 12px; font-family: var(--font-mono); margin-top: 6px;">16,000 samples, 16 kHz<br>1.0s window, 1 channel</div>
+              </div>
+              <div style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 18px;">&rarr;</div>
+              <div class="impulse-block" style="border: 1px solid var(--border-color); background: var(--bg-page); padding: 12px; width: 220px;">
+                <div style="font-size: 11px; color: var(--text-secondary);">Processing block</div>
+                <div style="font-weight: 600; margin-top: 4px;">MFCC spectrogram</div>
+                <div style="font-size: 12px; font-family: var(--font-mono); margin-top: 6px;">40 coefficients, 25ms win<br>10ms step, 98x40 output</div>
+              </div>
+              <div style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 18px;">&rarr;</div>
+              <div class="impulse-block" style="border: 1px solid var(--border-color); background: var(--bg-page); padding: 12px; width: 220px;">
+                <div style="font-size: 11px; color: var(--text-secondary);">Learning block</div>
+                <div style="font-weight: 600; margin-top: 4px;">DS-CNN classifier</div>
+                <div style="font-size: 12px; font-family: var(--font-mono); margin-top: 6px;">3x DepthwiseSeparable blocks<br>13,256 parameters</div>
+              </div>
+              <div style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 18px;">&rarr;</div>
+              <div class="impulse-block" style="border: 1px solid var(--border-color); background: var(--bg-page); padding: 12px; width: 220px;">
+                <div style="font-size: 11px; color: var(--text-secondary);">Output features</div>
+                <div style="font-weight: 600; margin-top: 4px;">8 keyword classes</div>
+                <div style="font-size: 12px; font-family: var(--font-mono); margin-top: 6px;">yes, no, stop, go, up,<br>down, unknown, silence</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. FEATURES -->
+        <section id="page-features" class="page-section" style="display: none;">
+          <div class="page-header">
+            <h1 class="page-title">Feature explorer</h1>
+            <p class="page-description">Two-dimensional principal component analysis projection of feature representations.</p>
+          </div>
+
+          <div class="grid-two-column">
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">PCA feature projection</h2>
+              </div>
+              <div class="class-toggle-list" id="pca-class-toggles">
+                <button class="class-toggle-btn active" data-class-idx="0"><span class="class-toggle-swatch" style="background-color: #1F6F78;"></span>WALKING</button>
+                <button class="class-toggle-btn active" data-class-idx="1"><span class="class-toggle-swatch" style="background-color: #A06F18;"></span>UPSTAIRS</button>
+                <button class="class-toggle-btn active" data-class-idx="2"><span class="class-toggle-swatch" style="background-color: #A63A33;"></span>DOWNSTAIRS</button>
+                <button class="class-toggle-btn active" data-class-idx="3"><span class="class-toggle-swatch" style="background-color: #4B5D8A;"></span>SITTING</button>
+                <button class="class-toggle-btn active" data-class-idx="4"><span class="class-toggle-swatch" style="background-color: #6F7A36;"></span>STANDING</button>
+                <button class="class-toggle-btn active" data-class-idx="5"><span class="class-toggle-swatch" style="background-color: #85563A;"></span>LAYING</button>
+              </div>
+              <div class="chart-controls-bar">
+                <div class="chart-btn-group">
+                  <button class="chart-tool-btn" data-chart="pca" data-action="zoom-in" title="Zoom in">+</button>
+                  <button class="chart-tool-btn" data-chart="pca" data-action="zoom-out" title="Zoom out">-</button>
+                  <button class="chart-tool-btn" data-chart="pca" data-action="reset" title="Reset zoom">Reset</button>
+                </div>
+                <div class="chart-hint">Scroll to zoom, drag to pan, click points</div>
+                <div class="chart-toolbar">
+                  <a class="chart-link" href="/api/results/har_baseline_training_curves.csv" download>Download CSV</a>
+                </div>
+              </div>
+              <div class="chart-box" style="height: 260px;">
+                <canvas id="pca-scatter-canvas"></canvas>
+              </div>
+              <div class="sample-detail-card" id="pca-sample-card">
+                <div class="sample-detail-item"><span class="sample-detail-label">Sample:</span> <span class="sample-detail-val" id="pca-card-id">#1024</span></div>
+                <div class="sample-detail-item"><span class="sample-detail-label">Class:</span> <span class="sample-detail-val" id="pca-card-class">WALKING</span></div>
+                <div class="sample-detail-item"><span class="sample-detail-label">PC1:</span> <span class="sample-detail-val" id="pca-card-pc1">-2.45</span></div>
+                <div class="sample-detail-item"><span class="sample-detail-label">PC2:</span> <span class="sample-detail-val" id="pca-card-pc2">1.18</span></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Feature extraction parameters</h2>
+              </div>
+              <table class="data-table" id="events-table">
+                <tbody>
+                  <tr><td>IMU sampling rate</td><td class="mono">50 Hz</td></tr>
+                  <tr><td>IMU window length</td><td class="mono">128 samples (2.56 s)</td></tr>
+                  <tr><td>IMU axes</td><td class="mono">total_acc_x, y, z; body_gyro_x, y, z</td></tr>
+                  <tr><td>Audio sample rate</td><td class="mono">16,000 Hz</td></tr>
+                  <tr><td>Audio window length</td><td class="mono">16,000 samples (1.00 s)</td></tr>
+                  <tr><td>MFCC filter bands</td><td class="mono">40 triangular mel filters</td></tr>
+                  <tr><td>Frame length and step</td><td class="mono">25.0 ms (400 samples), 10.0 ms (160 samples)</td></tr>
+                  <tr><td>Spectrogram dimension</td><td class="mono">98 time frames by 40 cepstral coefficients</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. CLASSIFIER: ACTIVITY -->
+        <section id="page-classifier-activity" class="page-section" style="display: none;">
+          <div class="page-header">
+            <h1 class="page-title">Classifier: human activity recognition</h1>
+            <p class="page-description">1D Convolutional Neural Network evaluated on held-out test subjects.</p>
+          </div>
+
+          <div class="grid-two-column">
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Model metrics</h2>
+              </div>
+              <table class="metrics-table">
+                <tbody>
+                  <tr><td class="metric-label">Accuracy</td><td class="metric-value" id="har-acc-val">93.42%</td></tr>
+                  <tr><td class="metric-label">Loss</td><td class="metric-value" id="har-loss-val">0.251</td></tr>
+                  <tr><td class="metric-label">Parameters</td><td class="metric-value">24,806</td></tr>
+                  <tr><td class="metric-label">Training epochs</td><td class="metric-value">5 (early stopping)</td></tr>
+                </tbody>
+              </table>
+
+              <div class="panel-header" style="margin-top: 16px;">
+                <h2 class="panel-title">On-device performance</h2>
+              </div>
+              <table class="data-table" id="events-table">
+                <tbody>
+                  <tr><td>Inferencing time</td><td class="mono">14.8 ms <span class="tag">estimate</span></td></tr>
+                  <tr><td>Desktop time</td><td class="mono">0.31 ms <span class="tag">desktop, relative</span></td></tr>
+                  <tr><td>Peak RAM usage</td><td class="mono">18.4 KB <span class="tag">estimate</span></td></tr>
+                  <tr><td>Flash usage</td><td class="mono">32.6 KB <span class="tag">.tflite size</span></td></tr>
+                  <tr><td>MACs</td><td class="mono">757,760</td></tr>
+                </tbody>
+              </table>
+              <div style="font-size: 11px; color: var(--text-secondary); margin-top: 6px;">
+                Estimates for a Cortex-M class target. Not measured on hardware. Assumption: Cortex-M4 at 64 MHz, INT8 CMSIS-NN ~ 1.25 cycles per MAC, FP32 ~ 4.0 cycles per MAC.
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Confusion matrix</h2>
+              </div>
+              <div class="chart-box" style="height: 240px; display: flex; align-items: center; justify-content: center;">
+                <img id="har-cm-img" src="/api/results/har_baseline_confusion_matrix.png" alt="HAR Confusion Matrix" style="max-height: 240px; max-width: 100%; border: 1px solid var(--border-color);">
+              </div>
+              <div class="chart-toolbar">
+                <a class="chart-link" href="/api/results/har_baseline_confusion_matrix.csv" download>Download CSV</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Training and validation curves</h2>
+            </div>
+            <div class="chart-controls-bar">
+              <div class="chart-btn-group">
+                <button class="chart-tool-btn" data-chart="har-curves" data-action="zoom-in" title="Zoom in">+</button>
+                <button class="chart-tool-btn" data-chart="har-curves" data-action="zoom-out" title="Zoom out">-</button>
+                <button class="chart-tool-btn" data-chart="har-curves" data-action="reset" title="Reset zoom">Reset</button>
+              </div>
+              <div class="chart-hint">Scroll to zoom, drag to pan, hover points for exact loss and accuracy</div>
+              <div class="chart-toolbar">
+                <a class="chart-link" href="/api/results/har_baseline_training_curves.csv" download>Download CSV</a>
+              </div>
+            </div>
+            <div class="chart-box" style="height: 220px;">
+              <canvas id="har-curves-canvas"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. CLASSIFIER: KEYWORD -->
+        <section id="page-classifier-keyword" class="page-section" style="display: none;">
+          <div class="page-header">
+            <h1 class="page-title">Classifier: keyword spotting</h1>
+            <p class="page-description">Depthwise-Separable CNN evaluated on official Google Speech Commands test list.</p>
+          </div>
+
+          <div class="grid-two-column">
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Model metrics</h2>
+              </div>
+              <table class="metrics-table">
+                <tbody>
+                  <tr><td class="metric-label">Accuracy</td><td class="metric-value" id="kws-acc-val">89.67%</td></tr>
+                  <tr><td class="metric-label">Loss</td><td class="metric-value" id="kws-loss-val">0.342</td></tr>
+                  <tr><td class="metric-label">Parameters</td><td class="metric-value">56,008</td></tr>
+                  <tr><td class="metric-label">Emergency keyword</td><td class="metric-value mono">stop</td></tr>
+                </tbody>
+              </table>
+
+              <div class="panel-header" style="margin-top: 16px;">
+                <h2 class="panel-title">On-device performance</h2>
+              </div>
+              <table class="data-table" id="events-table">
+                <tbody>
+                  <tr><td>Inferencing time</td><td class="mono">28.2 ms <span class="tag">estimate</span></td></tr>
+                  <tr><td>Desktop time</td><td class="mono">0.68 ms <span class="tag">desktop, relative</span></td></tr>
+                  <tr><td>Peak RAM usage</td><td class="mono">34.2 KB <span class="tag">estimate</span></td></tr>
+                  <tr><td>Flash usage</td><td class="mono">68.4 KB <span class="tag">.tflite size</span></td></tr>
+                  <tr><td>MACs</td><td class="mono">1,443,840</td></tr>
+                </tbody>
+              </table>
+              <div style="font-size: 11px; color: var(--text-secondary); margin-top: 6px;">
+                Estimates for a Cortex-M class target. Not measured on hardware. Assumption: Cortex-M4 at 64 MHz, INT8 CMSIS-NN ~ 1.25 cycles per MAC, FP32 ~ 4.0 cycles per MAC.
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Confusion matrix</h2>
+              </div>
+              <div class="chart-box" style="height: 240px; display: flex; align-items: center; justify-content: center;">
+                <img id="kws-cm-img" src="/api/results/kws_baseline_confusion_matrix.png" alt="KWS Confusion Matrix" style="max-height: 240px; max-width: 100%; border: 1px solid var(--border-color);">
+              </div>
+              <div class="chart-toolbar">
+                <a class="chart-link" href="/api/results/kws_baseline_confusion_matrix.csv" download>Download CSV</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Training and validation curves</h2>
+            </div>
+            <div class="chart-controls-bar">
+              <div class="chart-btn-group">
+                <button class="chart-tool-btn" data-chart="kws-curves" data-action="zoom-in" title="Zoom in">+</button>
+                <button class="chart-tool-btn" data-chart="kws-curves" data-action="zoom-out" title="Zoom out">-</button>
+                <button class="chart-tool-btn" data-chart="kws-curves" data-action="reset" title="Reset zoom">Reset</button>
+              </div>
+              <div class="chart-hint">Scroll to zoom, drag to pan, hover points for exact loss and accuracy</div>
+              <div class="chart-toolbar">
+                <a class="chart-link" href="/api/results/kws_baseline_training_curves.csv" download>Download CSV</a>
+              </div>
+            </div>
+            <div class="chart-box" style="height: 220px;">
+              <canvas id="kws-curves-canvas"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. COMPRESSION -->
+        <section id="page-compression" class="page-section" style="display: none;">
+          <div class="page-header">
+            <h1 class="page-title">Compression and TinyML optimization</h1>
+            <p class="page-description">Evaluation across FP32, magnitude pruning, FP16, full INT8, and distillation.</p>
+          </div>
+
+          <div class="tabs-header">
+            <button class="tab-btn active" data-tab="tab-quant-comparison">Version comparison</button>
+            <button class="tab-btn" data-tab="tab-distillation">Knowledge distillation</button>
+          </div>
+
+          <div id="tab-quant-comparison" class="tab-content">
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Optimization variants comparison</h2>
+              </div>
+              <table class="data-table" id="events-table">
+                <thead>
+                  <tr>
+                    <th>Model</th>
+                    <th>Variant</th>
+                    <th class="num">Accuracy</th>
+                    <th class="num">Flash (.tflite)</th>
+                    <th class="num">Gzip size</th>
+                    <th class="num">Peak RAM</th>
+                    <th class="num">MACs</th>
+                    <th class="num">Desktop time</th>
+                  </tr>
+                </thead>
+                <tbody id="benchmark-table-rows">
+                  <tr><td>HAR 1D-CNN</td><td>FP32 baseline</td><td class="num">93.42%</td><td class="num">108.2 KB</td><td class="num">96.4 KB</td><td class="num">28.4 KB</td><td class="num">757,760</td><td class="num">0.42 ms</td></tr>
+                  <tr><td>HAR 1D-CNN</td><td>Pruned (50%)</td><td class="num">93.18%</td><td class="num">108.2 KB</td><td class="num">62.1 KB</td><td class="num">28.4 KB</td><td class="num">757,760</td><td class="num">0.40 ms</td></tr>
+                  <tr><td>HAR 1D-CNN</td><td>FP16</td><td class="num">93.40%</td><td class="num">56.1 KB</td><td class="num">49.8 KB</td><td class="num">22.1 KB</td><td class="num">757,760</td><td class="num">0.36 ms</td></tr>
+                  <tr><td>HAR 1D-CNN</td><td>INT8 (PTQ)</td><td class="num">93.05%</td><td class="num">32.6 KB</td><td class="num">26.4 KB</td><td class="num">18.4 KB</td><td class="num">757,760</td><td class="num">0.31 ms</td></tr>
+                  <tr><td>KWS DS-CNN</td><td>FP32 baseline</td><td class="num">89.67%</td><td class="num">238.4 KB</td><td class="num">214.2 KB</td><td class="num">52.8 KB</td><td class="num">1,443,840</td><td class="num">0.94 ms</td></tr>
+                  <tr><td>KWS DS-CNN</td><td>Pruned (50%)</td><td class="num">89.33%</td><td class="num">238.4 KB</td><td class="num">142.6 KB</td><td class="num">52.8 KB</td><td class="num">1,443,840</td><td class="num">0.91 ms</td></tr>
+                  <tr><td>KWS DS-CNN</td><td>FP16</td><td class="num">89.65%</td><td class="num">124.6 KB</td><td class="num">108.9 KB</td><td class="num">41.2 KB</td><td class="num">1,443,840</td><td class="num">0.79 ms</td></tr>
+                  <tr><td>KWS DS-CNN</td><td>INT8 (PTQ)</td><td class="num">89.17%</td><td class="num">68.4 KB</td><td class="num">56.2 KB</td><td class="num">34.2 KB</td><td class="num">1,443,840</td><td class="num">0.68 ms</td></tr>
+                </tbody>
+              </table>
+              <div class="chart-toolbar">
+                <a class="chart-link" href="/api/results/benchmark.csv" download>Download CSV</a>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-distillation" class="tab-content" style="display: none;">
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Knowledge distillation results</h2>
+              </div>
+              <table class="data-table" id="events-table">
+                <thead><tr><th>Model configuration</th><th class="num">Parameters</th><th class="num">Test accuracy</th><th>Notes</th></tr></thead>
+                <tbody>
+                  <tr><td>Teacher model (DS-CNN large)</td><td class="num">124,456</td><td class="num">91.83%</td><td>High capacity reference</td></tr>
+                  <tr><td>Student baseline (without distillation)</td><td class="num">15,848</td><td class="num">82.17%</td><td>Trained with hard labels only</td></tr>
+                  <tr><td>Student with distillation</td><td class="num">15,848</td><td class="num">85.67%</td><td>Temperature T=3.0, alpha=0.3</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. FEDERATED LEARNING -->
+        <section id="page-federated" class="page-section" style="display: none;">
+          <div class="page-header">
+            <h1 class="page-title">Federated learning simulation</h1>
+            <p class="page-description">Decentralized Federated Averaging (FedAvg) on UCI HAR subjects with communication cost analysis.</p>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Convergence across federated rounds</h2>
+            </div>
+            <div class="chart-controls-bar">
+              <div class="chart-btn-group">
+                <button class="chart-tool-btn" data-chart="fed" data-action="zoom-in" title="Zoom in">+</button>
+                <button class="chart-tool-btn" data-chart="fed" data-action="zoom-out" title="Zoom out">-</button>
+                <button class="chart-tool-btn" data-chart="fed" data-action="reset" title="Reset zoom">Reset</button>
+              </div>
+              <div class="chart-hint">Scroll to zoom, drag to pan, hover points for round accuracy</div>
+              <div class="chart-toolbar">
+                <a class="chart-link" href="/api/results/federated_accuracy.csv" download>Download CSV</a>
+              </div>
+            </div>
+            <div class="chart-box" style="height: 240px;">
+              <canvas id="federated-canvas"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Federated communication analysis</h2>
+            </div>
+            <table class="data-table" id="events-table">
+              <thead><tr><th>Metric</th><th class="num">Unquantized FP32</th><th class="num">Quantized INT8</th></tr></thead>
+              <tbody>
+                <tr><td>Parameters per client update</td><td class="num">24,806 floats</td><td class="num">24,806 bytes</td></tr>
+                <tr><td>Uplink and downlink per round (8 clients)</td><td class="num">1,587.6 KB</td><td class="num">396.9 KB</td></tr>
+                <tr><td>Total 15-round communication</td><td class="num">23.25 MB</td><td class="num">5.81 MB</td></tr>
+                <tr><td>Bandwidth reduction ratio</td><td class="num">1.0x</td><td class="num">4.0x compression</td></tr>
+              </tbody>
+            </table>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-top: 6px;">
+              Single-machine simulation on UCI HAR subject partitions.
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. ROBUSTNESS -->
+        <section id="page-robustness" class="page-section" style="display: none;">
+          <div class="page-header">
+            <h1 class="page-title">Adversarial robustness and noise degradation</h1>
+            <p class="page-description">Fast Gradient Sign Method attacks on MFCC features and noise defense verification.</p>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Attack and noise degradation curves</h2>
+            </div>
+            <div class="chart-controls-bar">
+              <div class="chart-btn-group">
+                <button class="chart-tool-btn" data-chart="robustness" data-action="zoom-in" title="Zoom in">+</button>
+                <button class="chart-tool-btn" data-chart="robustness" data-action="zoom-out" title="Zoom out">-</button>
+                <button class="chart-tool-btn" data-chart="robustness" data-action="reset" title="Reset zoom">Reset</button>
+              </div>
+              <div class="chart-hint">Scroll to zoom, drag to pan across epsilon perturbations</div>
+              <div class="chart-toolbar">
+                <a class="chart-link" href="/api/results/adversarial_fgsm.csv" download>Download CSV</a>
+              </div>
+            </div>
+            <div class="chart-box" style="height: 240px;">
+              <canvas id="robustness-canvas"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">FGSM perturbation impact</h2>
+            </div>
+            <table class="data-table" id="events-table">
+              <thead><tr><th>Epsilon (perturbation strength)</th><th class="num">Undefended baseline</th><th class="num">Defended model</th></tr></thead>
+              <tbody>
+                <tr><td>0.00 (clean audio)</td><td class="num">89.67%</td><td class="num">88.50%</td></tr>
+                <tr><td>0.02</td><td class="num">74.17%</td><td class="num">83.33%</td></tr>
+                <tr><td>0.05</td><td class="num">48.33%</td><td class="num">72.67%</td></tr>
+                <tr><td>0.10</td><td class="num">22.50%</td><td class="num">54.17%</td></tr>
+                <tr><td>0.20</td><td class="num">8.33%</td><td class="num">31.67%</td></tr>
+              </tbody>
+            </table>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-top: 6px;">
+              White-box FGSM on float MFCC is a proxy for perturbation susceptibility on deployed edge INT8 models.
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. LIVE CLASSIFICATION -->
+        <section id="page-live" class="page-section" style="display: none;">
+          <div class="page-header">
+            <h1 class="page-title">Live classification</h1>
+            <p class="page-description">Real-time inference stream from connected Android phone or offline simulated replay.</p>
+          </div>
+
+          <!-- Connection Panel -->
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Phone connection panel</h2>
+              <div class="status-pill"><span class="status-dot ok"></span>WebSocket active</div>
+            </div>
+            <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+              <div style="border: 1px solid var(--border-color); background: var(--bg-panel); padding: 8px;">
+                <img src="/api/qr" alt="Phone Connection QR Code" style="width: 140px; height: 140px; display: block;">
+              </div>
+              <div style="flex: 1; min-width: 260px;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px;">Connect an Android phone (Chrome)</div>
+                <div style="font-family: var(--font-mono); font-size: 12px; margin-bottom: 10px; color: var(--accent);">
+                  https://<span class="lan-ip-text">{{ lan_ip }}</span>:{{ port }}/phone
+                </div>
+                <ol style="padding-left: 18px; font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+                  <li>Connect laptop and phone to the same Wi-Fi network (or phone hotspot).</li>
+                  <li>Scan the QR code with phone camera or open the URL in Chrome.</li>
+                  <li>Tap "Advanced" &rarr; "Proceed to {{ lan_ip }} (unsafe)" to accept self-signed SSL cert.</li>
+                  <li>Tap "Start sensors" on the phone page and grant microphone access.</li>
+                </ol>
+              </div>
+              <div style="width: 240px; border-left: 1px solid var(--border-color); padding-left: 16px;">
+                <div class="form-group" style="margin-bottom: 10px;">
+                  <label for="live-mode-select" class="form-label">Input source:</label>
+                  <select id="live-mode-select" class="form-select">
+                    <option value="phone">Phone live (WebSocket)</option>
+                    <option value="simulated">Simulated replay (offline)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="alert-mode-select" class="form-label">Alert mode:</label>
+                  <select id="alert-mode-select" class="form-select">
+                    <option value="both">Both (fall rule or keyword)</option>
+                    <option value="fall_rule">Rule-based fall only</option>
+                    <option value="keyword_plus_activity">Keyword plus activity only</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Alert Banner -->
+          <div id="live-alert-banner" style="display: none; border: 1px solid var(--status-alert); background: #F7EAE9; padding: 12px 16px; margin-bottom: 4px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="status-dot alert"></span>
+                <strong style="color: var(--status-alert); font-size: 14px;">EMERGENCY ALERT TRIGGERED</strong>
+              </div>
+              <span id="alert-banner-time" class="mono" style="font-size: 12px;">--:--:--</span>
+            </div>
+            <div id="alert-banner-rule" style="font-size: 13px; margin-top: 4px; color: var(--text-primary);">
+              Rule triggered details here.
+            </div>
+          </div>
+
+          <!-- Live Sensor Stream Oscilloscope -->
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Live sensor stream</h2>
+              <div class="status-pill"><span class="status-dot ok"></span><span id="live-stream-status">Active 20 Hz</span></div>
+            </div>
+            <div class="chart-controls-bar">
+              <div class="chart-btn-group">
+                <button class="chart-tool-btn" id="btn-pause-stream" title="Pause or resume live trace">Pause</button>
+                <button class="chart-tool-btn" data-chart="live" data-action="zoom-in" title="Zoom in">+</button>
+                <button class="chart-tool-btn" data-chart="live" data-action="zoom-out" title="Zoom out">-</button>
+                <button class="chart-tool-btn" data-chart="live" data-action="reset" title="Reset zoom">Reset</button>
+                <button class="chart-tool-btn" id="btn-clear-stream" title="Clear trace">Clear</button>
+              </div>
+              <div class="chart-hint">Axes: Acc X (teal), Acc Y (ochre), Acc Z (slate), Mag (brick). Threshold: 2.5g</div>
+              <div class="chart-toolbar">
+                <span class="mono" style="font-size: 11px; color: var(--text-secondary);">Magnitude: <strong id="live-mag-display">1.00g</strong></span>
+              </div>
+            </div>
+            <div class="chart-box" style="height: 180px;">
+              <canvas id="live-sensor-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Sensor Trace & Classifications -->
+          <div class="grid-two-column">
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Activity recognition</h2>
+                <div style="font-family: var(--font-mono); font-size: 13px; font-weight: 600;" id="current-activity-label">WALKING</div>
+              </div>
+              <table class="data-table" id="events-table">
+                <thead><tr><th>Class</th><th class="num">Probability</th></tr></thead>
+                <tbody id="live-activity-probs">
+                  <tr><td>WALKING</td><td class="num">0.940</td></tr>
+                  <tr><td>WALKING_UPSTAIRS</td><td class="num">0.020</td></tr>
+                  <tr><td>WALKING_DOWNSTAIRS</td><td class="num">0.010</td></tr>
+                  <tr><td>SITTING</td><td class="num">0.010</td></tr>
+                  <tr><td>STANDING</td><td class="num">0.010</td></tr>
+                  <tr><td>LAYING</td><td class="num">0.010</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Keyword spotting</h2>
+                <div style="font-family: var(--font-mono); font-size: 13px; font-weight: 600;" id="current-keyword-label">silence</div>
+              </div>
+              <table class="data-table" id="events-table">
+                <thead><tr><th>Class</th><th class="num">Probability</th></tr></thead>
+                <tbody id="live-keyword-probs">
+                  <tr><td>silence</td><td class="num">0.950</td></tr>
+                  <tr><td>stop (emergency)</td><td class="num">0.010</td></tr>
+                  <tr><td>yes</td><td class="num">0.010</td></tr>
+                  <tr><td>no</td><td class="num">0.010</td></tr>
+                  <tr><td>go</td><td class="num">0.010</td></tr>
+                  <tr><td>up</td><td class="num">0.010</td></tr>
+                  <tr><td>down</td><td class="num">0.010</td></tr>
+                  <tr><td>unknown</td><td class="num">0.010</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Events Table -->
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Events</h2>
+              <button class="btn btn-secondary" id="clear-events-btn">Clear events</button>
+            </div>
+            <table class="data-table" id="events-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Source</th>
+                  <th>Label</th>
+                  <th class="num">Confidence</th>
+                  <th>Triggering rule</th>
+                </tr>
+              </thead>
+              <tbody id="events-table-body">
+                <tr><td colspan="5" class="empty-state">No live samples yet. Open the phone page or switch to Simulated replay.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 11. MODEL TESTING -->
+        <section id="page-model-testing" class="page-section" style="display: none;">
+          <div class="page-header">
+            <h1 class="page-title">Model testing</h1>
+            <p class="page-description">Validation on held-out test sets with misclassified error analysis.</p>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Test set evaluation summary</h2>
+            </div>
+            <table class="data-table" id="events-table">
+              <thead><tr><th>Model</th><th>Dataset</th><th class="num">Test samples</th><th class="num">Test accuracy</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>HAR 1D-CNN</td><td>UCI HAR (Inertial Signals)</td><td class="num">2947</td><td class="num">93.42%</td><td><span class="status-pill"><span class="status-dot ok"></span>Pass</span></td></tr>
+                <tr><td>KWS DS-CNN</td><td>Google Speech Commands v0.02</td><td class="num">600</td><td class="num">89.67%</td><td><span class="status-pill"><span class="status-dot ok"></span>Pass</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Misclassified test samples inspection</h2>
+            </div>
+            <table class="data-table" id="events-table">
+              <thead><tr><th>Sample ID</th><th>True class</th><th>Predicted class</th><th class="num">Confidence</th><th>Inspection</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">HAR_TEST_0042</td><td>SITTING</td><td>STANDING</td><td class="num">0.582</td><td><a href="#data" class="chart-link">Open in viewer</a></td></tr>
+                <tr><td class="mono">HAR_TEST_0119</td><td>WALKING_UPSTAIRS</td><td>WALKING</td><td class="num">0.614</td><td><a href="#data" class="chart-link">Open in viewer</a></td></tr>
+                <tr><td class="mono">KWS_TEST_0018</td><td>stop</td><td>up</td><td class="num">0.491</td><td><a href="#data" class="chart-link">Open in viewer</a></td></tr>
+                <tr><td class="mono">KWS_TEST_0083</td><td>unknown</td><td>no</td><td class="num">0.523</td><td><a href="#data" class="chart-link">Open in viewer</a></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 12. DEPLOYMENT -->
+        <section id="page-deployment" class="page-section" style="display: none;">
+          <div class="page-header">
+            <h1 class="page-title">Deployment</h1>
+            <p class="page-description">Exported TinyML binaries, C byte arrays, and MCU budget feasibility.</p>
+          </div>
+
+          <div class="grid-two-column">
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Model binaries (.tflite)</h2>
+              </div>
+              <table class="data-table" id="events-table">
+                <thead><tr><th>File</th><th class="num">Size</th><th>Action</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono">har_int8.tflite</td><td class="num">32.6 KB</td><td><a href="/api/download/har_int8.tflite" class="btn btn-secondary">Download</a></td></tr>
+                  <tr><td class="mono">har_fp16.tflite</td><td class="num">56.1 KB</td><td><a href="/api/download/har_fp16.tflite" class="btn btn-secondary">Download</a></td></tr>
+                  <tr><td class="mono">kws_int8.tflite</td><td class="num">68.4 KB</td><td><a href="/api/download/kws_int8.tflite" class="btn btn-secondary">Download</a></td></tr>
+                  <tr><td class="mono">kws_fp16.tflite</td><td class="num">124.6 KB</td><td><a href="/api/download/kws_fp16.tflite" class="btn btn-secondary">Download</a></td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">C byte arrays (TFLite Micro)</h2>
+              </div>
+              <table class="data-table" id="events-table">
+                <thead><tr><th>Header file</th><th class="num">Array size</th><th>Action</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono">har_int8.h</td><td class="num">32,600 B</td><td><a href="/api/download/har_int8.h" class="btn btn-secondary">Download</a></td></tr>
+                  <tr><td class="mono">kws_int8.h</td><td class="num">68,400 B</td><td><a href="/api/download/kws_int8.h" class="btn btn-secondary">Download</a></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Target microcontroller budget feasibility</h2>
+            </div>
+            <table class="data-table" id="events-table">
+              <thead><tr><th>Target specification</th><th class="num">Device limit</th><th class="num">Project usage</th><th>Feasibility</th></tr></thead>
+              <tbody>
+                <tr><td>Cortex-M4 Flash storage</td><td class="num">1,024 KB</td><td class="num">101.0 KB (both models)</td><td><span class="status-pill"><span class="status-dot ok"></span>Pass (9.8% of Flash)</span></td></tr>
+                <tr><td>Cortex-M4 SRAM (Tensor Arena)</td><td class="num">256 KB</td><td class="num">52.6 KB (peak arena)</td><td><span class="status-pill"><span class="status-dot ok"></span>Pass (20.5% of SRAM)</span></td></tr>
+                <tr><td>Clock frequency</td><td class="num">64 MHz</td><td class="num">64 MHz</td><td><span class="status-pill"><span class="status-dot ok"></span>Pass</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Edge Impulse studio manual workflow appendix</h2>
+            </div>
+            <div class="notice-box">
+              <div class="notice-title">Status: Not executed (Theoretical survey and manual workflow reference)</div>
+              <ol style="padding-left: 18px; margin-top: 6px; font-size: 12px; line-height: 1.6;">
+                <li>Create project in Edge Impulse Studio, select "Accelerometer data" for HAR and "Audio" for KWS.</li>
+                <li>Upload raw UCI HAR 6-axis csv windows and Speech Commands 16 kHz wav files via Edge Impulse CLI uploader.</li>
+                <li>Configure Impulse: 128 samples at 50 Hz &rarr; Raw Data Block &rarr; Classification (Keras 1D-CNN).</li>
+                <li>Train model using EON Tuner, inspect confusion matrix and on-device performance estimates.</li>
+                <li>Deploy as C++ library or CMSIS-NN pack, compile using Keil MDK or Arm GCC.</li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <!-- 13. DATA AND PRIVACY -->
+        <section id="page-privacy" class="page-section" style="display: none;">
+          <div class="page-header">
+            <h1 class="page-title">Data and privacy policy</h1>
+            <p class="page-description">Transparency regarding sensors, processing locality, logging policies, and dataset licenses.</p>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Sensor access and processing locality</h2>
+            </div>
+            <div style="font-size: 13px; line-height: 1.6; color: var(--text-primary);">
+              <p style="margin-bottom: 8px;"><strong>Sensors accessed:</strong> The phone interface reads accelerometer (total acceleration including gravity) and gyroscope (rotation rate in radians per second) via the browser DeviceMotionEvent API. The microphone is accessed via the Web Audio API (getUserMedia) downsampled to 16 kHz PCM.</p>
+              <p style="margin-bottom: 8px;"><strong>Locality of processing:</strong> All TinyML inference runs strictly locally on the user laptop host. Raw audio and motion samples are streamed into transient in-memory ring buffers and are <strong>not written to disk</strong> during live operation.</p>
+              <p style="margin-bottom: 8px;"><strong>Event logging:</strong> When an emergency alert fires, only the timestamp, classification label, confidence score, and the name of the triggering rule are recorded in the event log. You can clear this history anytime using the button on the Live classification page.</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Dataset citations and licenses</h2>
+            </div>
+            <table class="data-table" id="events-table">
+              <thead><tr><th>Dataset</th><th>Source</th><th>License</th><th>Reference citation</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>UCI Human Activity Recognition Using Smartphones</td>
+                  <td>UCI Machine Learning Repository</td>
+                  <td>Creative Commons Attribution 4.0</td>
+                  <td>Anguita et al., "A Public Domain Dataset for Human Activity Recognition Using Smartphones", ESANN 2013.</td>
+                </tr>
+                <tr>
+                  <td>Google Speech Commands v0.02</td>
+                  <td>TensorFlow / Google Brain</td>
+                  <td>Creative Commons Attribution 4.0</td>
+                  <td>Warden, Pete. "Speech Commands: A Dataset for Limited-Vocabulary Speech Recognition", arXiv:1804.03209, 2018.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 14. NOTICE -->
+        <section id="page-notice" class="page-section" style="display: none;">
+          <div class="page-header">
+            <h1 class="page-title">Notice and terms</h1>
+            <p class="page-description">Educational prototype terms, medical disclaimers, and documented operational limitations.</p>
+          </div>
+
+          <div class="panel">
+            <div class="notice-box" style="border-left: 3px solid var(--status-warning);">
+              <div class="notice-title" style="color: var(--status-warning);">Educational prototype notice</div>
+              <p style="font-size: 13px; line-height: 1.6;">
+                This system is an academic research prototype prepared for the course "Introduction to AI and Embedded Systems". It is <strong>not a medical device</strong>, has not undergone clinical certification, and must never be used for real healthcare monitoring, fall alerting, or emergency medical response. No warranty of fitness for any purpose is provided.
+              </p>
+            </div>
+
+            <div style="margin-top: 12px; font-size: 13px; line-height: 1.6; color: var(--text-primary);">
+              <div style="font-weight: 600; margin-bottom: 6px;">Documented operational limitations:</div>
+              <ul style="padding-left: 18px; color: var(--text-secondary); line-height: 1.6;">
+                <li>The UCI HAR dataset does not contain an empirical fall class. The fall detector uses a heuristic impact-spike rule with ML posture confirmation, tested on synthetic impact traces.</li>
+                <li>The Google Speech Commands dataset does not include the word "help". The system uses "stop" as the configurable emergency keyword.</li>
+                <li>Live phone sensor accuracy will be lower than held-out test accuracy due to variable pocket placement, accelerometer noise, and client-side web browser timing jitter.</li>
+                <li>Inference timing numbers on desktop CPU are relative benchmarks, not hardware measurements on physical silicon.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="/static/js/chart.min.js"></script>
+  <script src="/static/js/hammer.min.js"></script>
+  <script src="/static/js/chartjs-plugin-zoom.min.js"></script>
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "random_forest": {
+    "test_accuracy": 0.8055649813369529,
+    "feature_dim": 30,
+    "n_estimators": 50
+  },
+  "kmeans_unsupervised": {
+    "n_clusters": 6,
+    "adjusted_rand_index": 0.47088456013345725,
+    "normalized_mutual_info": 0.6032890125781064
+  }
+}

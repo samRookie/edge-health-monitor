@@ -1,0 +1,8 @@
+{
+  "underfit_params": 106,
+  "underfit_final_train_acc": 0.48525652289390564,
+  "underfit_final_val_acc": 0.4511784613132477,
+  "overfit_params": 8491398,
+  "overfit_final_train_acc": 0.972000002861023,
+  "overfit_final_val_acc": 0.7744107842445374
+}

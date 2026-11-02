@@ -1,0 +1,38 @@
+{
+  "epsilons": [
+    0.0,
+    0.02,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "undefended_accuracies": [
+    0.695,
+    0.375,
+    0.1767,
+    0.115,
+    0.0617
+  ],
+  "defended_accuracies": [
+    0.125,
+    0.125,
+    0.125,
+    0.125,
+    0.11
+  ],
+  "snr_levels_db": [
+    30,
+    20,
+    10,
+    5,
+    0
+  ],
+  "snr_accuracies": [
+    0.695,
+    0.6967,
+    0.565,
+    0.185,
+    0.125
+  ],
+  "scope_note": "White-box FGSM on float MFCC is a proxy for perturbation susceptibility on deployed edge INT8 models."
+}

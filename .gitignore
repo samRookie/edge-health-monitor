@@ -1,0 +1,80 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# C extensions
+*.obj
+*.o
+*.a
+*.lib
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables & secrets (CRITICAL)
+.env
+.env.*
+*.env
+!.env.example
+
+# Local SSL Certificates and private keys (CRITICAL)
+data/cert.pem
+data/key.pem
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+
+# Bulky datasets & raw data archives (CRITICAL - do not push 100MB+ audio/motion to Git)
+data/speech_commands/
+data/uci_har/
+data/*.npz
+data/*.zip
+data/*.tar.gz
+data/*.tar
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Playwright & Browsers
+test-results/
+playwright-report/
+
+# OS-generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vercel local project directory
+.vercel

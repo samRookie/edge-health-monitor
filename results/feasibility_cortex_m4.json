@@ -1,0 +1,123 @@
+[
+  {
+    "model": "har",
+    "variant": "FP32",
+    "flash_usage_kb": 69.53,
+    "flash_limit_kb": 1024.0,
+    "flash_feasible": true,
+    "ram_usage_kb": 172.75,
+    "ram_limit_kb": 256.0,
+    "ram_feasible": true,
+    "overall_status": "PASS"
+  },
+  {
+    "model": "har",
+    "variant": "Pruned (50%)",
+    "flash_usage_kb": 69.53,
+    "flash_limit_kb": 1024.0,
+    "flash_feasible": true,
+    "ram_usage_kb": 172.75,
+    "ram_limit_kb": 256.0,
+    "ram_feasible": true,
+    "overall_status": "PASS"
+  },
+  {
+    "model": "har",
+    "variant": "Pruned (80%)",
+    "flash_usage_kb": 69.53,
+    "flash_limit_kb": 1024.0,
+    "flash_feasible": true,
+    "ram_usage_kb": 172.75,
+    "ram_limit_kb": 256.0,
+    "ram_feasible": true,
+    "overall_status": "PASS"
+  },
+  {
+    "model": "har",
+    "variant": "FP16",
+    "flash_usage_kb": 39.53,
+    "flash_limit_kb": 1024.0,
+    "flash_feasible": true,
+    "ram_usage_kb": 191.55,
+    "ram_limit_kb": 256.0,
+    "ram_feasible": true,
+    "overall_status": "PASS"
+  },
+  {
+    "model": "har",
+    "variant": "INT8",
+    "flash_usage_kb": 26.17,
+    "flash_limit_kb": 1024.0,
+    "flash_feasible": true,
+    "ram_usage_kb": 48.31,
+    "ram_limit_kb": 256.0,
+    "ram_feasible": true,
+    "overall_status": "PASS"
+  },
+  {
+    "model": "kws",
+    "variant": "FP32",
+    "flash_usage_kb": 57.35,
+    "flash_limit_kb": 1024.0,
+    "flash_feasible": true,
+    "ram_usage_kb": 1936.64,
+    "ram_limit_kb": 256.0,
+    "ram_feasible": false,
+    "overall_status": "FAIL"
+  },
+  {
+    "model": "kws",
+    "variant": "Pruned (50%)",
+    "flash_usage_kb": 57.35,
+    "flash_limit_kb": 1024.0,
+    "flash_feasible": true,
+    "ram_usage_kb": 1936.64,
+    "ram_limit_kb": 256.0,
+    "ram_feasible": false,
+    "overall_status": "FAIL"
+  },
+  {
+    "model": "kws",
+    "variant": "Pruned (80%)",
+    "flash_usage_kb": 57.35,
+    "flash_limit_kb": 1024.0,
+    "flash_feasible": true,
+    "ram_usage_kb": 1936.64,
+    "ram_limit_kb": 256.0,
+    "ram_feasible": false,
+    "overall_status": "FAIL"
+  },
+  {
+    "model": "kws",
+    "variant": "FP16",
+    "flash_usage_kb": 35.1,
+    "flash_limit_kb": 1024.0,
+    "flash_feasible": true,
+    "ram_usage_kb": 1951.57,
+    "ram_limit_kb": 256.0,
+    "ram_feasible": false,
+    "overall_status": "FAIL"
+  },
+  {
+    "model": "kws",
+    "variant": "INT8",
+    "flash_usage_kb": 28.45,
+    "flash_limit_kb": 1024.0,
+    "flash_feasible": true,
+    "ram_usage_kb": 504.77,
+    "ram_limit_kb": 256.0,
+    "ram_feasible": false,
+    "overall_status": "FAIL"
+  },
+  {
+    "model": "kws",
+    "variant": "Distilled Student",
+    "flash_usage_kb": 13.94,
+    "flash_limit_kb": 1024.0,
+    "flash_feasible": true,
+    "ram_usage_kb": 233.94,
+    "ram_limit_kb": 256.0,
+    "ram_feasible": true,
+    "overall_status": "PASS"
+  }
+]

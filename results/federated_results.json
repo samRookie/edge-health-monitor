@@ -1,0 +1,15 @@
+{
+  "num_clients": 6,
+  "rounds": 10,
+  "local_epochs": 1,
+  "model_parameters": 16230,
+  "centralized_accuracy": 0.9002375296912114,
+  "final_fedavg_iid_accuracy": 0.8103155751611809,
+  "final_fedavg_non_iid_accuracy": 0.8527315914489311,
+  "accuracy_gap_non_iid_pct": 4.750593824228034,
+  "fp32_communication_per_round_kb": 760.78,
+  "int8_quantized_communication_per_round_kb": 190.2,
+  "total_fp32_transfer_mb": 7.43,
+  "total_int8_transfer_mb": 1.86,
+  "simulation_note": "Single-machine simulation on UCI HAR subjects."
+}

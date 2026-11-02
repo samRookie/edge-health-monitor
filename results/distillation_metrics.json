@@ -1,0 +1,8 @@
+{
+  "teacher_params": 27560,
+  "teacher_accuracy": 0.125,
+  "student_params": 3016,
+  "student_base_accuracy": 0.135,
+  "student_distilled_accuracy": 0.125,
+  "distillation_gain_pct": -1.0000000000000009
+}

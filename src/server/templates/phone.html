@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Phone Sensors, Edge Health Monitor</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/css/tokens.css">
+  <link rel="stylesheet" href="/static/css/layout.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <style>
+    body {
+      background-color: var(--bg-page);
+      display: block;
+      padding: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .phone-card {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .big-btn {
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .sensor-readout {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-card">
+    <div style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Edge Health Monitor</div>
+    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Mobile sensor capture node</div>
+    
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding: 8px 12px; background: var(--bg-page); border: 1px solid var(--border-color);">
+      <span style="font-size: 12px; color: var(--text-secondary);">Connection:</span>
+      <span id="ws-status" class="status-pill"><span class="status-dot warning"></span>Connecting</span>
+    </div>
+
+    <button id="toggle-sensors-btn" class="btn btn-primary big-btn">Start sensors</button>
+  </div>
+
+  <div class="phone-card">
+    <div class="panel-header">
+      <div class="panel-title">Accelerometer (g)</div>
+      <div id="accel-rate" class="mono" style="font-size: 11px; color: var(--text-secondary);">0 Hz</div>
+    </div>
+    <div class="sensor-readout">
+      <div>X: <span id="acc-x" class="mono">0.00</span> g</div>
+      <div>Y: <span id="acc-y" class="mono">0.00</span> g</div>
+      <div>Z: <span id="acc-z" class="mono">0.00</span> g</div>
+      <div style="margin-top: 4px; font-weight: 600;">Magnitude: <span id="acc-mag" class="mono">0.00</span> g</div>
+    </div>
+  </div>
+
+  <div class="phone-card">
+    <div class="panel-header">
+      <div class="panel-title">Gyroscope (rad/s)</div>
+      <div id="gyro-rate" class="mono" style="font-size: 11px; color: var(--text-secondary);">0 Hz</div>
+    </div>
+    <div class="sensor-readout">
+      <div>Alpha (Z): <span id="gyro-z" class="mono">0.00</span> rad/s</div>
+      <div>Beta (X): <span id="gyro-x" class="mono">0.00</span> rad/s</div>
+      <div>Gamma (Y): <span id="gyro-y" class="mono">0.00</span> rad/s</div>
+    </div>
+  </div>
+
+  <div class="phone-card">
+    <div class="panel-header">
+      <div class="panel-title">Microphone (16 kHz)</div>
+      <div id="mic-status" class="mono" style="font-size: 11px; color: var(--text-secondary);">Inactive</div>
+    </div>
+    <div style="margin-top: 8px;">
+      <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">Audio input level:</div>
+      <div style="height: 12px; background: var(--bg-page); border: 1px solid var(--border-color);">
+        <div id="audio-level-bar" style="height: 100%; width: 0%; background: var(--accent);"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notice-box">
+    <div class="notice-title">Connection instructions</div>
+    <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">
+      Keep this screen awake while streaming. Sensor values are transmitted via WebSocket directly to your laptop host. No motion or audio data is stored on disk.
+    </p>
+  </div>
+
+  <script src="/static/js/phone.js"></script>
+</body>
+</html>
