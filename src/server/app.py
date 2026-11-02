@@ -281,8 +281,14 @@ async def background_simulation_loop():
 
 @app.on_event("startup")
 async def startup_event():
-    init_tflite_models()
-    asyncio.create_task(background_simulation_loop())
+    try:
+        init_tflite_models()
+    except Exception as e:
+        print(f"init_tflite_models error: {e}")
+    try:
+        asyncio.create_task(background_simulation_loop())
+    except Exception as e:
+        print(f"background_simulation_loop error: {e}")
 
 @app.get("/")
 def root():

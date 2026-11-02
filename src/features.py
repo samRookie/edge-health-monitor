@@ -3,7 +3,18 @@ Provides deterministic 50 Hz IMU normalization and 16 kHz MFCC calculation.
 """
 
 import numpy as np
-from scipy.fft import dct
+
+try:
+    from scipy.fft import dct
+except ImportError:
+    # Pure numpy fallback for DCT type-2 orthonormal
+    def dct(x, type=2, axis=-1, norm='ortho'):
+        N = x.shape[axis]
+        n = np.arange(N)
+        k = np.arange(N)
+        basis = np.cos(np.pi / N * (n[:, None] + 0.5) * k)
+        weights = np.where(k == 0, 1.0 / np.sqrt(N), np.sqrt(2.0 / N))
+        return np.dot(x, basis * weights)
 
 def normalize_imu_window(imu_data, phone_mode=False):
     """
